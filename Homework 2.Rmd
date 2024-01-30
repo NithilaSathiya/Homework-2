@@ -1,0 +1,165 @@
+---
+title: "Homework-2"
+author: "Nithila Sathiya"
+name: "ns37382"
+link: 
+date: "2024-01-25"
+output: pdf_document
+---
+
+```{r global_options, echo=FALSE, message = FALSE}
+knitr::opts_chunk$set(fig.height=3, fig.width=5.5, warning=FALSE, tidy=TRUE, tidy.opts=list(width.cutoff=60))
+library(tidyverse)
+library(ggplot2)
+library(dplyr)
+library(kableExtra)
+```
+
+# Problem 1
+## Part A
+```{r, echo = FALSE}
+profs = read.csv("profs.csv")
+```
+
+```{r, echo = FALSE, warning = FALSE, message = FALSE}
+ggplot(profs) + geom_histogram(aes(x = profs$eval), fill = "skyblue", col = "black") + xlab("Professor Evaluation Scores") + ylab("Frequency of Scores") + ggtitle("Frequency of Professor Evaluation Scores") + theme_classic()
+```
+
+This graph is skewed to the left. The skew demonstrates that students are more likely to evaluate a professor highly (4-5) than rate them a low score.
+
+## Part B
+```{r, echo = FALSE}
+ggplot(profs, aes(x = native, y = eval, fill = native)) + geom_boxplot() + xlab("Native or Not English Speaker") + ylab("Professor Evaluation Score") + ggtitle("Professor Evaluations by Native or not English Speakers")
+```
+
+The mean evaluation score for professors is higher for native English speakers than non-native speakers. However, there are a few outlier native English speaking professors with lower scores than non-native English speakers. 
+
+## Part C
+```{r, echo = FALSE, warning = FALSE, message = FALSE}
+ggplot(profs) + geom_histogram(aes(x = profs$eval), fill = "pink", col = "black") + facet_wrap(~gender) + xlab("Professor Evaluation Score") + ylab("Frequency of Score") + ggtitle("Frequency of Professor Evaluation Scores based on Gender")
+```
+
+There are more male professors than female at UT that were evaluated. According to the histogram male professors received higher scores than female professors.
+
+## Part D
+```{r, echo = FALSE, message = FALSE, warning = FALSE}
+ggplot(profs) + geom_point(aes(x = profs$beauty, y = profs$eval)) + xlab("Professor's Attractiveness") + ylab("Professor's Evaluation Score") + ggtitle("Comparison of Professor's Attractiveness versus Score")
+```
+
+There is no correlation between a professor's attractiveness and their evaluation score. There are a few outliers that show a low professor evaluation with a low attractiveness. 
+
+# Problem 2
+## Plot A
+```{r, echo=FALSE, warning = FALSE, message = FALSE}
+bike <- read.csv("bikeshare.csv")
+sort_bike = bike %>%
+  group_by(hr) %>%
+  summarize(avg_hr = mean(total)) %>%
+  round(0) 
+ggplot(data = sort_bike, aes(x = hr, y = avg_hr, group = 1)) + geom_line() + geom_point() + xlab("Hours of the Day") + ylab("Average Hourly Bike Rides") + ggtitle("Average Number of Bike Rentals throughout the Day")
+```
+
+This plot shows the progression of the average number of bike rentals from 2011-2012 across 24 hours. From 12 to 5am there was a relatively low number of bike rentals and there was an increase from 5 to 8am, most probably due to morning traffic. After 8am it decreases while hitting a plateau around noon. The evening traffic is reflected in the plot as bike rentals pick up around 4pm and decrease at 6pm and continue to do so until the day ends. The average number of bike rentals seem to reflect the ups and downs of traffic patterns.
+
+## Plot B
+```{r, echo = FALSE, warning = FALSE, message = FALSE}
+sort_bike1 = bike %>%
+  group_by(hr, workingday) %>%
+  summarize(avg_hr = mean(total)) %>%
+  round(0)
+sort_bike1 = sort_bike1 %>%
+  mutate(workingday = ifelse(workingday == 0, "No", "Yes"))
+ggplot(data = sort_bike1, aes(x = hr, y = avg_hr, group = 1)) + geom_line() + geom_point() + facet_wrap(~workingday) + xlab("Hours of the Day") + ylab("Average Hourly Bike Rides") + ggtitle("Bike Rentals throughout the Day sorted by Working Day")
+```
+
+These plots demonstrate the rental pattern of bikes from 2011-2012 throughout 24 hours sorted by whether or not it is a working day. The working day plot demonstrates traffic patterns surround a workday more definitively. The increases of bike rentals are seen at morning and evening hours- when the average person goes to work. The non-working day plot shows a steady increase from 5 to noon then a plateau until 4pm then it decreases. Overall, bike rentals decrease on a non-working day and seem to be at max use around lunch time, which is when people usually have plans during the weekend.
+
+## Plot C
+```{r, echo = FALSE, message = FALSE, warning = FALSE}
+sort_bike2 = bike %>%
+  filter(hr == 9) %>%
+  group_by(workingday, weathersit) %>%
+  summarize(avg_hr = mean(total)) %>%
+  round(0)
+sort_bike2 = sort_bike2 %>%
+  mutate(workingday = ifelse(workingday == 0, "No", "Yes"))
+ggplot(data = sort_bike2, aes(x = weathersit, y = avg_hr)) + geom_bar(fill = "purple", col = "black", stat = "identity") + facet_wrap(~workingday) + xlab("Weather Situation") + ylab("Average Number of Bike Rentals") + ggtitle("Bike Rentals based on Weather and sorted by Working Day")
+```
+
+These bar plots demonstrate the average number of bike rentals from 2011-2012 based on the weather situation and whether or not it is a working day. Weather situation 1 represented clear skies, 2 represented cloud and mist, and 3 represented light precipitation. On the weekend, there were more bike rentals when the weather was clear whereas on a working day bike rentals were the same when the weather was clear and cloudy/misty. In both graphs there was an exponential decrease when the weather was rainy/snowy. The working day plot most likely didn't face a decrease between clear and cloudy/misty days since more people depend on bike rentals to get to work regardless of the weather, whereas during the weekend populations can choose to remain home instead of renting a bike to carry out plans.
+
+# Problem 3
+```{r, echo = FALSE, message = FALSE, warning = FALSE}
+metro <- read.csv("capmetro_UT.csv")
+
+metro = mutate(metro,
+day_of_week = factor(day_of_week,
+levels=c("Mon", "Tue", "Wed","Thu", "Fri", "Sat", "Sun")),
+month = factor(month,
+levels=c("Sep", "Oct","Nov")))
+
+
+sort_metro <- metro %>%
+  group_by(day_of_week, hour_of_day, month) %>%
+  summarize(avg_boarding = mean(boarding))
+
+ggplot(sort_metro) + geom_line(aes(x = hour_of_day, y = avg_boarding, group = month, color = month)) + facet_wrap(~day_of_week) + scale_color_manual(values = c("red", "green", "blue")) + xlab("Hours of the Day (0-24)") + ylab("Average Boardings in 15-min Window") + ggtitle("Bus Boardings Over the Day sorted by Days of the Week")
+```
+
+These plots demonstrate the average number of bus boardings from September to November 2018 over the 24-hour period. The plots patterns are relatively similar, except the weekends which had on average less bus riders and an evened out spread of riders throughout the day. On Monday, there are less riders in September than in other months. This could be due to the Monday holiday that UT has resulting in less bus riders similar to why the weekend has less bus riders. On Wednesday, Thursday, and Friday there are less riders in November. This could be due to Thanksgiving break in which workers and students are usually let out Wednesday. Since many of their riders are spending time with family instead of going to work/school or any where else, there is a slight dip in bus riders in November on those days.
+\newpage
+
+```{r, echo = FALSE, message = FALSE, warning = FALSE}
+ggplot(metro, aes(x = temperature, y = boarding, color = weekend)) + geom_point() + facet_wrap(~hour_of_day) + xlab("Temperature (F)") + ylab("Number of Boarders") + ggtitle("Boardings vs Temperature sorted by Hour of the Day and Weekend/Weekday")
+```
+
+These plots show the number of bus riders across temperatures and sorted by each hour the bus is running (6am to 9pm) and the points are sorted by whether or not the bus rider rode on the weekend or a weekday. The temperature does not seem to have an effect on the number of UT students riding the bus. When looking at each graph the spread of the points are relatively consistent and the number of points are not condensed at a certain temperature on the x-axis. No matter the number of bus riders the spread of bus riders across temperatures is the same, proving that temperature does not seem to have an extreme effect on the number of UT students riding the bus. 
+\newpage
+
+# Problem 4
+## Part A
+```{r, echo = FALSE, message = FALSE, warning = FALSE}
+music <- read.csv("billboard.csv")
+
+top_10 <- music %>%
+  group_by(song, performer) %>%
+  count(name = "total_weeks") %>%
+  arrange(desc(total_weeks)) %>%
+  head(10)
+
+colnames(top_10) <- c("Song", "Performer", "Weeks on Billboard")
+kable(top_10)
+```
+
+This table shows the song, the artist, and the number of weeks the song has been on the Billboard Top 100.
+
+## Part B
+```{r, echo = FALSE, message = FALSE, warning = FALSE}
+diverse_songs <- music %>%
+  group_by(year) %>%
+  filter(year != 1958 & year != 2021) %>%
+  summarize(unique_songs = length(unique(song)))
+
+ggplot(diverse_songs) + geom_line(aes(x = year, y = unique_songs)) + xlab("Year") + ylab("Number of Unique Songs") + ggtitle("Diverse Songs on the Billboard 100 from 1959-2020")
+```
+
+This graph demonstrates the progression of unique songs (the number of songs with different names) from 1959-2020. There is an interesting shift in uniqueness in the 2000s. In the 1960s the number of unique songs is at an all time high then immediately starts decreasing in 2000. The trend then increases with unique songs until 2020 with a slight increase then decrease in 2010. 
+
+## Part C
+```{r, echo = FALSE, message = FALSE, warning = FALSE}
+ten_week_hit <- music %>%
+  group_by(song, performer) %>%
+  count(name = "total_weeks") %>%
+  filter(total_weeks >= 10) %>%
+  group_by(performer) %>%
+  count(name = "song_per") %>%
+  filter(song_per >= 30)
+
+ggplot(ten_week_hit) + geom_col(aes(x = performer, y = song_per), col = "black", fill = "darkgreen") + coord_flip() + xlab("Number of Songs") + ylab("Artist") + ggtitle("Artists with at least 30 songs that are 10-week Hits")
+```
+
+This bar plot shows the music artists with at least 30 songs that were ten-week hits on the Billboard Top 100. Elton John has an all time high number of songs that were ten-week hits while everyone else remained in the 30-40 range.
+
+
+
+
